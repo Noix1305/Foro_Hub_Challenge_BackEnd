@@ -122,45 +122,10 @@ curl -X GET "http://localhost:8081/topicos/1"`
 Los ID para realizar consultas son obligatorios.
 <br>
 Se deben manejar errores en caso de que un tópico no exista o se envíe un ID incorrecto.
-
-
-<h1>2. Detalles de un Tópico</h1>
-**🔍 GET** `/topicos/{id}`
-
-- **Parámetro obligatorio**:
-    - `id`: Identificador del tópico.
-
-**📋 Ejemplo de solicitud**:
-`bash
-curl -X GET "http://localhost:8081/topicos/1"`
-<h1>💬 Respuesta:</h1>
-
-{<br>
-  "id": 1,
-  <br>
-  "titulo": "Problemas con Java",
-  <br>
-  "mensaje": "Tengo problemas al iniciar mi aplicación Java.",
-  <br>
-  "fechaCreacion": "26/12/2024",
-  <br>
-  "estado": "abierto",
-  <br>
-  "nombreAutor": "Juan Pérez",
-  <br>
-  "nombreCurso": "Java Avanzado"
-  <br>
-}
-<br>
-<h1>📜 Regla de Negocio</h1>
-Los ID para realizar consultas son obligatorios.
-<br>
-Se deben manejar errores en caso de que un tópico no exista o se envíe un ID incorrecto.
 <br>
 <h2>🗂️ Ejemplo de Datos Iniciales</h2>
 <br>
 Usar el siguiente JSON para pruebas con Insomnia o Postman:
-
 
 [<br>
 {
