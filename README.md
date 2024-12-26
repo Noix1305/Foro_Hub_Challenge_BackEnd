@@ -32,25 +32,21 @@ Con información detallada como:
 ---
 
 ## 🌟 **Características**
-1️⃣ **Listar todos los tópicos**  
+-1️⃣ **Listar todos los tópicos**  
    - 🔄 Retorna un listado paginado de todos los tópicos.
 
-2️⃣ **Detalles de un tópico**  
+-2️⃣ **Detalles de un tópico**  
    - 🔍 Muestra información detallada de un tópico específico mediante su ID.
 
-3️⃣ **Filtrar tópicos**  
+-3️⃣ **Filtrar tópicos**  
    - 📚 Por **nombre de curso**.  
    - 🗓️ Por **año de creación**.  
    - 🔀 Por combinación de **nombre de curso y año**.  
 
-4️⃣ **Formatos personalizados**  
+-4️⃣ **Formatos personalizados**  
    - 📅 Devuelve las fechas en el formato `dd/MM/yyyy`.
 
 ---
-
-### 🌈 **Nota**
-Puedes personalizar este archivo README aún más aplicando estilos adicionales o creando diagramas con herramientas como [Mermaid](https://mermaid-js.github.io/mermaid/) o insertar badges con [Shields.io](https://shields.io/). 🎉
-
 
 # ⚙️ **Instalación y Configuración**
 
@@ -63,8 +59,8 @@ Antes de comenzar, asegúrate de tener instalados los siguientes programas:
 
 ## 🗃️ **Configuración de Base de Datos**
 Sigue estos pasos para configurar la base de datos:
-1️⃣ **Crear una base de datos** llamada `foro`.
-2️⃣ **Configurar las credenciales** en el archivo `application.properties` o `application.yml`:
+- 1️⃣ **Crear una base de datos** llamada `foro`.
+- 2️⃣ **Configurar las credenciales** en el archivo `application.properties` o `application.yml`:
 
 `spring.datasource.url="jdbc:mysql://localhost:3306/foro"`
 
@@ -72,19 +68,19 @@ Sigue estos pasos para configurar la base de datos:
 
 🚀 Instrucciones de Ejecución
 Para poner en marcha la aplicación, sigue estos pasos: 
-1️⃣ Clonar el repositorio a tu máquina local.
-2️⃣ Importar el proyecto en tu IDE. 
-3️⃣ Ejecuta el siguiente comando en la terminal: mvn clean install
-4️⃣ Iniciar la aplicación desde la clase principal.
+- 1️⃣ Clonar el repositorio a tu máquina local.
+- 2️⃣ Importar el proyecto en tu IDE. 
+- 3️⃣ Ejecuta el siguiente comando en la terminal: mvn clean install
+- 4️⃣ Iniciar la aplicación desde la clase principal.
 
 📡 Endpoints
-1️⃣ Listar Tópicos
-💻 Método: GET
-📍 Endpoint: /topicos
-🔧 Parámetros opcionales:
-nombreCurso: Filtra por el nombre del curso.
-fechaCreacion: Filtra por el año de creación.
-📝 Ejemplo de Solicitud: curl -X GET "http://localhost:8081/topicos?nombreCurso=Java&fechaCreacion=2025"
+- 1️⃣ Listar Tópicos
+- 💻 Método: GET
+- 📍 Endpoint: /topicos
+- 🔧 Parámetros opcionales:
+- nombreCurso: Filtra por el nombre del curso.
+- fechaCreacion: Filtra por el año de creación.
+- 📝 Ejemplo de Solicitud: curl -X GET "http://localhost:8081/topicos?nombreCurso=Java&fechaCreacion=2025"
 
 
 
@@ -201,7 +197,7 @@ Usar el siguiente JSON para pruebas con Insomnia o Postman:
 
 <hr>
 
-<h2>Autores</h2>
+<h2>Autor</h2>
 <ul>
     <li>José Pino Araya</li>
     <li>Contacto: <a href="j.pino2610@gmail.com">j.pino2610@gmail.com</a></li>
