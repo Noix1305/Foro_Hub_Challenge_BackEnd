@@ -18,31 +18,28 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Autowired
     private TokenService tokenService;
-
     @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        //Obtener token del Header
+        // Obtener el token del header
+        if (request.getRequestURI().startsWith("/swagger-ui") || request.getRequestURI().startsWith("/v3/api-docs")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         var authHeader = request.getHeader("Authorization");
-
         if (authHeader != null) {
             var token = authHeader.replace("Bearer ", "");
-
-            var nombreUsuario = tokenService.getSubject(token);
+            var nombreUsuario = tokenService.getSubject(token); // extract username
             if (nombreUsuario != null) {
-                //Token valido
+                // Token valido
                 var usuario = usuarioRepository.findByCorreoElectronico(nombreUsuario);
-
-                var authentication = new UsernamePasswordAuthenticationToken(usuario,null,
-                        usuario.getAuthorities());//Forzamos el inicio de sesion
+                var authentication = new UsernamePasswordAuthenticationToken(usuario, null,
+                        usuario.getAuthorities()); // Forzamos un inicio de sesion
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-
         }
-
         filterChain.doFilter(request, response);
-
     }
 }
