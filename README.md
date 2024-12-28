@@ -162,6 +162,17 @@ Usar el siguiente JSON para pruebas con Insomnia o Postman:
 
 <hr>
 
+<h2>Documentacion</h2>
+
+<ul>
+<br>
+  <il>Swagger Doc<il>
+  <br>
+  <il>Disponible en http://localhost:8081/swagger-ui.html</il>
+  <br>
+  <il>Debes iniciar el servidor para poder acceder</il>
+</ul>
+
 <h2>Autor</h2>
 <ul>
     <li>José Pino Araya</li>
