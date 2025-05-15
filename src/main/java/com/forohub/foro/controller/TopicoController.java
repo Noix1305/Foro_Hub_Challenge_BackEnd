@@ -21,133 +21,140 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-
 @RestController
 @RequestMapping("/topicos")
 @SecurityRequirement(name = "bearer-key")
 public class TopicoController {
 
     @Autowired
-    private TopicoRepository topicoRepository;
+    private TopicoRepository topicoRepository; // Inyección del repositorio para manejar datos de Topico
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepository usuarioRepository; // Repositorio para manejar datos de Usuario
 
     @Autowired
-    private CursoRepository cursoRepository;
+    private CursoRepository cursoRepository; // Repositorio para manejar datos de Curso
 
     @PostMapping
     public void registrarTopico(@RequestBody @Valid DatosRegistroTopico datosRegistroTopico) {
-        // Verificar si ya existe un tópico con el mismo título y mensaje
+        // Crear una instancia de Topico a partir de los datos recibidos en el request
         Topico topico = new Topico(datosRegistroTopico);
+
+        // Verificar si ya existe un tópico con el mismo título y mensaje para evitar duplicados
         if (topicoRepository.existsByTituloAndMensaje(topico.getTitulo(), topico.getMensaje())) {
+            // Lanzar excepción si el tópico ya existe
             throw new IllegalArgumentException("Ya existe un tópico con el mismo título y mensaje.");
         }
 
-        // Obtener el autor y curso desde sus respectivos servicios
+        // Obtener el autor del tópico a partir del ID del autor
         Usuario autor = usuarioRepository.findById(topico.getAutorId())
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        // Obtener el curso asociado al tópico a partir del ID del curso
         Curso curso = cursoRepository.findById(topico.getCursoId())
                 .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
 
+        // Guardar el nuevo tópico en la base de datos
         topicoRepository.save(topico);
     }
 
-//    @PostMapping
-//    public ResponseEntity<Void> registrarTopicos(@RequestBody @Valid List<DatosRegistroTopico> topicoDTOs) {
-//        topicoDTOs.forEach(topicoDTO -> {
-//            Topico topico = new Topico(topicoDTO);
-//            if (topicoRepository.existsByTituloAndMensaje(topico.getTitulo(), topico.getMensaje())) {
-//                throw new IllegalArgumentException("Ya existe un tópico con el mismo título y mensaje.");
-//            }
-//            topicoRepository.save(topico);
-//        });
-//        return ResponseEntity.status(HttpStatus.CREATED).build();
-//    }
-
     @GetMapping
     public ResponseEntity<Page<DatosListadoTopico>> listadoTopicos(
-            @PageableDefault(size = 10) Pageable paginacion,
-            @RequestParam(required = false) String nombreCurso, // Parámetro de búsqueda por nombre de curso
-            @RequestParam(required = false) Integer fechaCreacion // Parámetro de búsqueda por año
+            @PageableDefault(size = 10) Pageable paginacion, // Parámetros para paginación, tamaño por defecto 10
+            @RequestParam(required = false) String nombreCurso, // Parámetro opcional para filtrar por nombre de curso
+            @RequestParam(required = false) Integer fechaCreacion // Parámetro opcional para filtrar por año de creación
     ) {
-        Page<Topico> topicosPaginados;
-        Long id_curso = null;
+        Page<Topico> topicosPaginados; // Página que contendrá los tópicos paginados
+        Long id_curso = null; // Variable para almacenar el ID del curso si se busca por nombre
 
         if (nombreCurso != null) {
+            // Buscar el curso por su nombre para obtener el ID
             Curso curso = cursoRepository.findByNombre(nombreCurso);
             id_curso = curso.getId();
         }
 
-        // Verificar los parámetros de búsqueda
+        // Decidir qué consulta realizar según los parámetros recibidos
         if (id_curso != null && fechaCreacion != null) {
-            // Buscar por nombre de curso y año
+            // Buscar tópicos que coincidan con curso y año
             topicosPaginados = topicoRepository.findByCursoIdAndFechaCreacionYear(id_curso, fechaCreacion, paginacion);
         } else if (nombreCurso != null) {
-            // Buscar solo por nombre de curso
+            // Buscar tópicos solo por curso
             topicosPaginados = topicoRepository.findByCursoId(id_curso, paginacion);
         } else if (fechaCreacion != null) {
-            // Buscar solo por año
+            // Buscar tópicos solo por año
             topicosPaginados = topicoRepository.findByFechaCreacionYear(fechaCreacion, paginacion);
         } else {
-            // Si no hay criterios, retornar todos los tópicos
+            // Si no hay filtros, obtener todos los tópicos paginados
             topicosPaginados = topicoRepository.findAll(paginacion);
         }
 
-        // Mapear cada tópico a DatosListadoTopico
+        // Mapear cada entidad Topico a su DTO DatosListadoTopico para la respuesta
         Page<DatosListadoTopico> datosListado = topicosPaginados.map(topico -> {
+            // Obtener nombre del autor por su ID
             String nombreAutor = usuarioRepository.findNombreById(topico.getAutorId());
 
+            // Obtener nombre del curso asociado al tópico, si existe
             String nombreCursoFinal = cursoRepository.findById(topico.getCursoId())
                     .map(Curso::getNombre)
                     .orElse("Curso desconocido");
+
+            // Obtener la fecha de creación del tópico sin formato
             LocalDateTime fechaSinFormato = topico.getFechaCreacion();
 
-            // Definir el formato de la fecha
+            // Definir el formato deseado para mostrar la fecha (día mes año)
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
 
-            // Formatear la fecha
+            // Formatear la fecha con el patrón definido
             String fechaFormateada = fechaSinFormato.format(formatter);
 
-            return new DatosListadoTopico(topico.getId(), topico.getTitulo(), topico.getMensaje(), nombreAutor, nombreCursoFinal, fechaFormateada);
+            // Construir el DTO con todos los datos para devolver en la respuesta
+            return new DatosListadoTopico(
+                    topico.getId(),
+                    topico.getTitulo(),
+                    topico.getMensaje(),
+                    nombreAutor,
+                    nombreCursoFinal,
+                    fechaFormateada
+            );
         });
 
+        // Devolver la página de tópicos ya mapeada en el cuerpo de la respuesta HTTP
         return ResponseEntity.ok(datosListado);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<DatosRespuestaTopico> obtenerTopicoPorId(@PathVariable @Valid Long id) {
-        // Buscar el tópico por el ID
+        // Buscar un tópico por su ID recibido en la URL
         Optional<Topico> topicoOpt = topicoRepository.findById(id);
 
-        // Verificar si el tópico existe
+        // Si no existe el tópico, devolver error 404 (Not Found)
         if (!topicoOpt.isPresent()) {
-            // Si no existe, devolver un error 404
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
-        // Obtener el tópico
+        // Obtener el tópico encontrado
         Topico topico = topicoOpt.get();
 
-        // Obtener el nombre del autor
+        // Obtener nombre del autor, o "Autor desconocido" si no existe
         String nombreAutor = usuarioRepository.findById(topico.getAutorId())
                 .map(Usuario::getNombre)
                 .orElse("Autor desconocido");
 
-        // Obtener el nombre del curso
+        // Obtener nombre del curso, o "Curso desconocido" si no existe
         String nombreCurso = cursoRepository.findById(topico.getCursoId())
                 .map(Curso::getNombre)
                 .orElse("Curso desconocido");
 
+        // Obtener la fecha de creación sin formato
         LocalDateTime fechaSinFormato = topico.getFechaCreacion();
 
-        // Definir el formato de la fecha
+        // Definir formato de fecha
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
 
         // Formatear la fecha
         String fechaFormateada = fechaSinFormato.format(formatter);
 
-        // Crear y retornar la respuesta con los datos del tópico
+        // Crear objeto con los datos del tópico para la respuesta
         DatosRespuestaTopico datosTopico = new DatosRespuestaTopico(
                 topico.getTitulo(),
                 topico.getMensaje(),
@@ -157,33 +164,54 @@ public class TopicoController {
                 nombreCurso
         );
 
+        // Devolver la información del tópico con código 200 OK
         return ResponseEntity.ok(datosTopico);
     }
 
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity actualizarTopico(@PathVariable Long id, @RequestBody DatosActualizarTopico datosActualizarTopico) {
+        // Buscar el tópico a actualizar por ID
         Optional<Topico> topicoOpt = topicoRepository.findById(id);
         if (!topicoOpt.isPresent()) {
+            // Si no existe, devolver error 404
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Topico no encontrado");
         }
+
+        // Obtener el tópico encontrado
         Topico topico = topicoOpt.get();
+
+        // Actualizar los datos del tópico con la información recibida
         topico.actualizarDatos(datosActualizarTopico);
+
+        // Guardar los cambios en la base de datos
         topicoRepository.save(topico);
-        return ResponseEntity.ok(new DatosActualizarTopico(topico.getId(), topico.getTitulo(), topico.getMensaje(),
-                topico.getAutorId(), topico.getCursoId()));
+
+        // Devolver la información actualizada en la respuesta
+        return ResponseEntity.ok(new DatosActualizarTopico(
+                topico.getId(),
+                topico.getTitulo(),
+                topico.getMensaje(),
+                topico.getAutorId(),
+                topico.getCursoId()
+        ));
     }
 
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity eliminarTopico(@PathVariable Long id) {
+        // Buscar tópico por ID para eliminar
         Optional<Topico> topicoOpt = topicoRepository.findById(id);
         if (!topicoOpt.isPresent()) {
+            // Si no se encuentra, devolver error 404
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Topico no encontrado");
         }
+
+        // Eliminar el tópico de la base de datos
         topicoRepository.deleteById(id);
+
+        // Devolver respuesta sin contenido (204 No Content)
         return ResponseEntity.noContent().build();
     }
-
 
 }
